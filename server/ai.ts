@@ -76,18 +76,15 @@ export async function generateChatbotResponse(
     // Truncate knowledge base to fit within token limits
     const truncatedKB = truncateKnowledgeBase(knowledgeBase, 30000);
     
-    const prompt = `You are a helpful ${role} assistant with the following personality: ${personalityPrompt}
+    const prompt = `You are a ${role} with this personality: ${personalityPrompt}
 
-Here's your knowledge base:
-${truncatedKB}
+Knowledge: ${truncatedKB}
 
-User asks: "${message}"
+User: "${message}"
 
-Respond naturally as a chatbot would - keep it conversational, friendly, and concise. Use the information from your knowledge base to give a helpful answer. Don't use markdown formatting like ### or **, just write naturally like you're having a conversation. If you don't have the specific information, mention what you can help with instead.
+Give a SHORT, friendly answer (1-2 sentences max) using your knowledge. Be conversational and helpful, no formatting:`;
 
-Your response:`;
-
-    const aiResponse = await makeAIRequest(prompt, 400, 0.7);
+    const aiResponse = await makeAIRequest(prompt, 150, 0.7);
     
     return aiResponse || "I apologize, but I'm unable to respond at the moment. Please try again.";
   } catch (error) {
