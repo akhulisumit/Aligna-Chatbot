@@ -101,18 +101,18 @@ export default function FileUpload({ onContentProcessed }: FileUploadProps) {
   };
 
   return (
-    <section id="create" className="py-32 bg-gradient-to-b from-slate-900 to-slate-800">
+    <section id="create" className="py-32 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-20">
-          <div className="inline-block p-1 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 mb-8">
-            <div className="bg-slate-900 rounded-full px-6 py-2">
-              <span className="text-sm font-medium text-gray-300">📚 Knowledge Base</span>
+          <div className="inline-block p-1 rounded-full bg-gradient-to-r from-gray-700 to-gray-800 mb-8">
+            <div className="bg-black rounded-full px-6 py-2">
+              <span className="text-sm font-medium text-gray-400">📚 Knowledge Base</span>
             </div>
           </div>
           <h2 className="text-4xl md:text-6xl font-bold mb-8 text-white">
-            Upload Your <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">Content</span>
+            Upload Your <span className="bg-gradient-to-r from-gray-300 to-gray-100 bg-clip-text text-transparent">Content</span>
           </h2>
-          <p className="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
+          <p className="text-xl md:text-2xl text-gray-400 max-w-4xl mx-auto leading-relaxed">
             Train your AI assistant with any content format - documents, websites, or direct text input
           </p>
         </div>
@@ -120,16 +120,16 @@ export default function FileUpload({ onContentProcessed }: FileUploadProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
           {/* PDF Upload */}
           <Card 
-            className="group cursor-pointer bg-white/5 backdrop-blur-sm border border-white/10 hover:border-red-400/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-red-500/20"
+            className="group cursor-pointer bg-gray-900/30 backdrop-blur-sm border border-gray-800 hover:border-gray-600 transition-all duration-300 hover:scale-105"
             onClick={() => handleFileUpload("pdf")}
           >
             <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <FileText className="text-2xl text-white" />
+              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gray-800 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <FileText className="text-2xl text-gray-300" />
               </div>
               <h3 className="text-xl font-bold mb-3 text-white">PDF Documents</h3>
-              <p className="text-gray-300 text-sm mb-6 leading-relaxed">Upload PDF files with advanced text extraction</p>
-              <Button className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 text-white font-semibold py-3 rounded-xl transition-all duration-300">
+              <p className="text-gray-400 text-sm mb-6 leading-relaxed">Upload PDF files with advanced text extraction</p>
+              <Button className="w-full bg-white text-black hover:bg-gray-100 font-semibold py-3 rounded-xl transition-all duration-300">
                 Choose PDF
               </Button>
             </CardContent>
@@ -137,16 +137,16 @@ export default function FileUpload({ onContentProcessed }: FileUploadProps) {
 
           {/* Text Upload */}
           <Card 
-            className="group cursor-pointer bg-white/5 backdrop-blur-sm border border-white/10 hover:border-green-400/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-500/20"
+            className="group cursor-pointer bg-gray-900/30 backdrop-blur-sm border border-gray-800 hover:border-gray-600 transition-all duration-300 hover:scale-105"
             onClick={() => handleFileUpload("text")}
           >
             <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <FileText className="text-2xl text-white" />
+              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gray-800 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <FileText className="text-2xl text-gray-300" />
               </div>
               <h3 className="text-xl font-bold mb-3 text-white">Text Files</h3>
-              <p className="text-gray-300 text-sm mb-6 leading-relaxed">Support for .txt, .md, .doc formats</p>
-              <Button className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold py-3 rounded-xl transition-all duration-300">
+              <p className="text-gray-400 text-sm mb-6 leading-relaxed">Support for .txt, .md, .doc formats</p>
+              <Button className="w-full bg-white text-black hover:bg-gray-100 font-semibold py-3 rounded-xl transition-all duration-300">
                 Choose Text
               </Button>
             </CardContent>
@@ -154,16 +154,16 @@ export default function FileUpload({ onContentProcessed }: FileUploadProps) {
 
           {/* Website URL */}
           <Card 
-            className="group cursor-pointer bg-white/5 backdrop-blur-sm border border-white/10 hover:border-blue-400/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20"
+            className="group cursor-pointer bg-gray-900/30 backdrop-blur-sm border border-gray-800 hover:border-gray-600 transition-all duration-300 hover:scale-105"
             onClick={handleUrlSubmit}
           >
             <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <Globe className="text-2xl text-white" />
+              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gray-800 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <Globe className="text-2xl text-gray-300" />
               </div>
               <h3 className="text-xl font-bold mb-3 text-white">Website URL</h3>
-              <p className="text-gray-300 text-sm mb-6 leading-relaxed">Extract content from web pages</p>
-              <Button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-semibold py-3 rounded-xl transition-all duration-300">
+              <p className="text-gray-400 text-sm mb-6 leading-relaxed">Extract content from web pages</p>
+              <Button className="w-full bg-white text-black hover:bg-gray-100 font-semibold py-3 rounded-xl transition-all duration-300">
                 Add URL
               </Button>
             </CardContent>
@@ -171,16 +171,16 @@ export default function FileUpload({ onContentProcessed }: FileUploadProps) {
 
           {/* Direct Text Input */}
           <Card 
-            className="group cursor-pointer bg-white/5 backdrop-blur-sm border border-white/10 hover:border-purple-400/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/20"
+            className="group cursor-pointer bg-gray-900/30 backdrop-blur-sm border border-gray-800 hover:border-gray-600 transition-all duration-300 hover:scale-105"
             onClick={() => setIsTextModalOpen(true)}
           >
             <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <Edit className="text-2xl text-white" />
+              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gray-800 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <Edit className="text-2xl text-gray-300" />
               </div>
               <h3 className="text-xl font-bold mb-3 text-white">Direct Input</h3>
-              <p className="text-gray-300 text-sm mb-6 leading-relaxed">Paste or type content directly</p>
-              <Button className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-400 hover:to-purple-500 text-white font-semibold py-3 rounded-xl transition-all duration-300">
+              <p className="text-gray-400 text-sm mb-6 leading-relaxed">Paste or type content directly</p>
+              <Button className="w-full bg-white text-black hover:bg-gray-100 font-semibold py-3 rounded-xl transition-all duration-300">
                 Start Typing
               </Button>
             </CardContent>
