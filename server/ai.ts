@@ -1,12 +1,12 @@
-// Gemini API configuration
-const GEMINI_API_KEY = process.env.GOOGLE_API_KEY;
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+// OpenRouter AI configuration
+const OPENROUTER_API_KEY = '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';
+const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 // Rate limiting helper
 let lastRequestTime = 0;
 const MIN_REQUEST_INTERVAL = 1000; // 1 second between requests
 
-async function makeGeminiRequest(prompt: string, maxTokens: number = 500, temperature: number = 0.7): Promise<string> {
+async function makeAIRequest(prompt: string, maxTokens: number = 500, temperature: number = 0.7): Promise<string> {
   // Simple rate limiting
   const now = Date.now();
   const timeSinceLastRequest = now - lastRequestTime;
@@ -15,36 +15,33 @@ async function makeGeminiRequest(prompt: string, maxTokens: number = 500, temper
   }
   lastRequestTime = Date.now();
 
-  const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+  const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
     },
     body: JSON.stringify({
-      contents: [
+      model: 'mistralai/mistral-small-3.1-24b-instruct:free',
+      messages: [
         {
-          parts: [
-            {
-              text: prompt
-            }
-          ]
+          role: 'user',
+          content: prompt
         }
       ],
-      generationConfig: {
-        maxOutputTokens: maxTokens,
-        temperature: temperature,
-      }
+      max_tokens: maxTokens,
+      temperature: temperature,
     })
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error(`Gemini API error ${response.status}:`, errorText);
-    throw new Error(`Gemini API error: ${response.status}`);
+    console.error(`OpenRouter API error ${response.status}:`, errorText);
+    throw new Error(`OpenRouter API error: ${response.status}`);
   }
 
   const data = await response.json();
-  return data.candidates[0]?.content?.parts[0]?.text || "";
+  return data.choices[0]?.message?.content || "";
 }
 
 export async function generateChatbotResponse(
@@ -78,11 +75,11 @@ User's question: ${message}
 
 Respond according to your role as a ${role} and use the personality traits described above. Make sure your response is directly based on the knowledge base content when relevant.`;
 
-    const aiResponse = await makeGeminiRequest(prompt, 500, 0.7);
+    const aiResponse = await makeAIRequest(prompt, 500, 0.7);
     
     return aiResponse || "I apologize, but I'm unable to respond at the moment. Please try again.";
   } catch (error) {
-    console.error("Gemini API error:", error);
+    console.error("OpenRouter API error:", error);
     
     // Intelligent fallback that still references the knowledge base
     const fallbackResponses = [
@@ -113,7 +110,7 @@ ${content}
 
 Please structure this as a detailed knowledge base that will enable accurate, personalized responses.`;
 
-    const processedContent = await makeGeminiRequest(prompt, 2000, 0.3);
+    const processedContent = await makeAIRequest(prompt, 2000, 0.3);
     
     return processedContent || content;
   } catch (error) {
