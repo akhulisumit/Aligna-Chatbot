@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertChatbotSchema, insertChatMessageSchema } from "@shared/schema";
-import { generateChatbotResponse, processUploadedContent } from "./openai";
+import { generateChatbotResponse, processUploadedContent } from "./gemini";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create a new chatbot

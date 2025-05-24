@@ -1,9 +1,6 @@
-import OpenAI from "openai";
-
-// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || "your-openai-api-key"
-});
+// Gemini API configuration
+const GEMINI_API_KEY = process.env.GOOGLE_API_KEY;
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 export async function generateChatbotResponse(
   message: string,
@@ -18,29 +15,45 @@ export async function generateChatbotResponse(
   try {
     const personalityPrompt = createPersonalityPrompt(personality, role);
     
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: `You are an AI assistant with the following characteristics: ${personalityPrompt}
+    const prompt = `You are an AI assistant with the following characteristics: ${personalityPrompt}
           
 Your knowledge base contains the following information:
 ${knowledgeBase}
 
-Use this knowledge base to answer questions accurately. If the question cannot be answered from the knowledge base, politely indicate that you don't have that information available.`
-        },
-        {
-          role: "user",
-          content: message
+Use this knowledge base to answer questions accurately. If the question cannot be answered from the knowledge base, politely indicate that you don't have that information available.
+
+User message: ${message}`;
+
+    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          maxOutputTokens: 500,
+          temperature: 0.7,
         }
-      ],
-      max_tokens: 500,
+      })
     });
 
-    return response.choices[0].message.content || "I apologize, but I'm unable to respond at the moment. Please try again.";
+    if (!response.ok) {
+      throw new Error(`Gemini API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.candidates[0]?.content?.parts[0]?.text || "I apologize, but I'm unable to respond at the moment. Please try again.";
   } catch (error) {
-    console.error("OpenAI API error:", error);
+    console.error("Gemini API error:", error);
     
     // Fallback responses when API is unavailable or quota exceeded
     const fallbackResponses = [
@@ -57,22 +70,38 @@ Use this knowledge base to answer questions accurately. If the question cannot b
 
 export async function processUploadedContent(content: string, type: 'pdf' | 'text' | 'url'): Promise<string> {
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: `You are a content processor. Extract and summarize the key information from the provided ${type} content. Focus on the main topics, important facts, and actionable information that would be useful for a chatbot to answer questions about. Format the output as a structured knowledge base.`
-        },
-        {
-          role: "user",
-          content: `Please process this ${type} content: ${content}`
+    const prompt = `You are a content processor. Extract and summarize the key information from the provided ${type} content. Focus on the main topics, important facts, and actionable information that would be useful for a chatbot to answer questions about. Format the output as a structured knowledge base.
+
+Please process this ${type} content: ${content}`;
+
+    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          maxOutputTokens: 2000,
+          temperature: 0.3,
         }
-      ],
-      max_tokens: 2000,
+      })
     });
 
-    return response.choices[0].message.content || content;
+    if (!response.ok) {
+      throw new Error(`Gemini API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.candidates[0]?.content?.parts[0]?.text || content;
   } catch (error) {
     console.error("Content processing error:", error);
     
