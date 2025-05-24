@@ -76,20 +76,16 @@ export async function generateChatbotResponse(
     // Truncate knowledge base to fit within token limits
     const truncatedKB = truncateKnowledgeBase(knowledgeBase, 30000);
     
-    const prompt = `You are a ${personalityPrompt}
+    const prompt = `You are a helpful ${role} assistant with the following personality: ${personalityPrompt}
 
-KNOWLEDGE BASE:
+Here's your knowledge base:
 ${truncatedKB}
 
-USER QUESTION: ${message}
+User asks: "${message}"
 
-INSTRUCTIONS:
-1. Answer the user's question using ONLY information from the knowledge base above
-2. Be specific and reference actual details from the content
-3. If the question isn't covered in the knowledge base, say "I don't have that specific information, but I can help with [mention what topics are in the knowledge base]"
-4. Maintain your personality traits while being accurate and helpful
+Respond naturally as a chatbot would - keep it conversational, friendly, and concise. Use the information from your knowledge base to give a helpful answer. Don't use markdown formatting like ### or **, just write naturally like you're having a conversation. If you don't have the specific information, mention what you can help with instead.
 
-Provide a direct, personalized response based on the knowledge base:`;
+Your response:`;
 
     const aiResponse = await makeAIRequest(prompt, 400, 0.7);
     
@@ -123,11 +119,11 @@ export async function processUploadedContent(content: string, type: 'pdf' | 'tex
       
       for (let i = 0; i < Math.min(chunks.length, 5); i++) { // Limit to 5 chunks
         const chunk = chunks[i];
-        const prompt = `Extract and summarize the key information from this ${type} content chunk ${i + 1}. Focus on the most important facts, data, and actionable information:
+        const prompt = `Extract the key information from this content and organize it in a simple, easy-to-read format. Focus on facts, important details, and anything that would help answer user questions:
 
 ${chunk}
 
-Provide a concise summary that captures the essential information.`;
+Write it clearly without using markdown headers or special formatting.`;
 
         try {
           const processed = await makeAIRequest(prompt, 1000, 0.3);
@@ -145,11 +141,11 @@ Provide a concise summary that captures the essential information.`;
     }
     
     // For smaller content, process normally
-    const prompt = `Extract and organize the key information from this ${type} content into a structured knowledge base:
+    const prompt = `Take this content and organize the key information in a simple, clear format that a chatbot can use to answer questions. Don't use markdown formatting, just write it naturally:
 
 ${content}
 
-Focus on the most important facts, data, and actionable information that will help answer user questions.`;
+Focus on the important facts and details that would be useful for answering user questions.`;
 
     const processedContent = await makeAIRequest(prompt, 1500, 0.3);
     
