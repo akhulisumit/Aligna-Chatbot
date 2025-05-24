@@ -88,10 +88,10 @@ export default function BotCustomization({ knowledgeBase, onChatbotCreated }: Bo
     <section id="customize" className="py-20 bg-gradient-to-b from-background to-secondary">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white">
             Customize Your <span className="text-neon-purple">AI Assistant</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-xl text-gray-200 max-w-3xl mx-auto">
             Personalize your chatbot's appearance, personality, and behavior
           </p>
         </div>

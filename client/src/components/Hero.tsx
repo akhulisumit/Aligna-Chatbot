@@ -21,14 +21,15 @@ export default function Hero() {
       
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="glass-card rounded-3xl p-8 md:p-16 max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-glow">
-            Build Your Own{" "}
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-white">
+            Professional{" "}
             <span className="bg-gradient-to-r from-neon-cyan to-neon-purple bg-clip-text text-transparent">
               AI Chatbot
-            </span>
+            </span>{" "}
+            Platform
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
-            Upload PDFs, Text, or Web URLs — Launch AI Agents in Minutes
+          <p className="text-xl md:text-2xl text-gray-200 mb-8 max-w-3xl mx-auto leading-relaxed">
+            Create intelligent chatbots with advanced document processing and seamless website integration
           </p>
           <Button
             onClick={scrollToCreate}
@@ -43,24 +44,24 @@ export default function Hero() {
             <Card className="glass-card hover:scale-105 transition-transform duration-300">
               <CardContent className="p-6 text-center">
                 <Upload className="text-neon-cyan text-3xl mb-4 mx-auto" />
-                <h3 className="text-lg font-semibold mb-2">Easy Upload</h3>
-                <p className="text-muted-foreground">Support for PDFs, text files, and websites</p>
+                <h3 className="text-lg font-semibold mb-2 text-white">Document Processing</h3>
+                <p className="text-gray-300">Advanced support for PDFs, text files, and web content</p>
               </CardContent>
             </Card>
             
             <Card className="glass-card hover:scale-105 transition-transform duration-300">
               <CardContent className="p-6 text-center">
                 <Palette className="text-neon-purple text-3xl mb-4 mx-auto" />
-                <h3 className="text-lg font-semibold mb-2">Full Customization</h3>
-                <p className="text-muted-foreground">Customize appearance and personality</p>
+                <h3 className="text-lg font-semibold mb-2 text-white">Smart Customization</h3>
+                <p className="text-gray-300">AI personality settings and visual themes</p>
               </CardContent>
             </Card>
             
             <Card className="glass-card hover:scale-105 transition-transform duration-300">
               <CardContent className="p-6 text-center">
                 <Code className="text-neon-cyan text-3xl mb-4 mx-auto" />
-                <h3 className="text-lg font-semibold mb-2">One-Click Deploy</h3>
-                <p className="text-muted-foreground">Get embed code and shareable links</p>
+                <h3 className="text-lg font-semibold mb-2 text-white">Enterprise Deploy</h3>
+                <p className="text-gray-300">Production-ready embed codes and API access</p>
               </CardContent>
             </Card>
           </div>

@@ -104,10 +104,10 @@ export default function FileUpload({ onContentProcessed }: FileUploadProps) {
     <section id="create" className="py-20 bg-background">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white">
             Upload Your <span className="text-neon-cyan">Knowledge Base</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-xl text-gray-200 max-w-3xl mx-auto">
             Train your AI chatbot with documents, websites, or custom text content
           </p>
         </div>

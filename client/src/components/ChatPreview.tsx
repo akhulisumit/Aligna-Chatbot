@@ -153,10 +153,10 @@ export default function ChatPreview({ chatbot }: ChatPreviewProps) {
     <section id="preview" className="py-20 bg-background">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white">
             Test Your <span className="text-neon-cyan">Chatbot</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-xl text-gray-200 max-w-3xl mx-auto">
             Try out your AI assistant before deploying it to your website
           </p>
         </div>
