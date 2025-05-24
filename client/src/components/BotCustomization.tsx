@@ -210,9 +210,9 @@ export default function BotCustomization({ knowledgeBase, onChatbotCreated }: Bo
                 <Button
                   onClick={handleSaveConfiguration}
                   disabled={isCreating}
-                  className="w-full bg-gradient-to-r from-neon-purple to-purple-600 hover:scale-105 transition-transform duration-200"
+                  className="w-full bg-white text-black hover:bg-gray-100 hover:scale-105 transition-transform duration-200"
                 >
-                  <Save className="mr-2" />
+                  <Save className="mr-2 text-black" />
                   {isCreating ? "Creating..." : "Save Configuration"}
                 </Button>
               </div>

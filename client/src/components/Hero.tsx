@@ -13,7 +13,7 @@ export default function Hero() {
   return (
     <section className="relative min-h-screen lg:min-h-[120vh] flex items-center justify-center overflow-hidden">
       {/* Dark Aesthetic Background */}
-      <div className="absolute inset-0 bg-black">
+      <div className="absolute inset-0 bg-gray-900">
         {/* Subtle Dark Orbs */}
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gray-800/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gray-700/8 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "-3s" }} />

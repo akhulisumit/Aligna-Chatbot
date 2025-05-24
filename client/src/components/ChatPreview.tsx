@@ -264,9 +264,9 @@ export default function ChatPreview({ chatbot }: ChatPreviewProps) {
                     onClick={sendMessage}
                     disabled={!inputMessage.trim() || isSending}
                     size="sm"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-gradient-to-r from-neon-cyan to-neon-purple hover:scale-105 transition-transform duration-200"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-black text-white hover:bg-gray-800 hover:scale-105 transition-transform duration-200"
                   >
-                    <span className="text-sm">➤</span>
+                    <span className="text-sm text-white">➤</span>
                   </Button>
                 </div>
                 <Button size="sm" variant="ghost" className="w-10 h-10 bg-border hover:bg-muted">

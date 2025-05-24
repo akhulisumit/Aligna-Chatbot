@@ -6,10 +6,10 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <div className="flex justify-center items-center space-x-2 mb-6">
-            <span className="text-lg">Made with</span>
+            <span className="text-lg text-white">Made with</span>
             <Heart className="text-red-400 animate-pulse w-5 h-5" />
-            <span className="text-lg">at</span>
-            <span className="text-lg font-bold bg-gradient-to-r from-neon-cyan to-neon-purple bg-clip-text text-transparent">
+            <span className="text-lg text-white">at</span>
+            <span className="text-lg font-bold text-white">
               Hackathon 2025
             </span>
           </div>
