@@ -1,6 +1,6 @@
-// OpenRouter AI configuration
-const OPENROUTER_API_KEY = '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';
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+// Gemini AI configuration
+const GEMINI_API_KEY = 'AIzaSyCYw5FL8mxz1m2EvebjRcyhG4tDpguTSUA';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 // Web scraping imports
 import axios from 'axios';
@@ -19,33 +19,36 @@ async function makeAIRequest(prompt: string, maxTokens: number = 500, temperatur
   }
   lastRequestTime = Date.now();
 
-  const response = await fetch(OPENROUTER_API_URL, {
+  const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'mistralai/mistral-small-3.1-24b-instruct:free',
-      messages: [
+      contents: [
         {
-          role: 'user',
-          content: prompt
+          parts: [
+            {
+              text: prompt
+            }
+          ]
         }
       ],
-      max_tokens: maxTokens,
-      temperature: temperature,
+      generationConfig: {
+        maxOutputTokens: maxTokens,
+        temperature: temperature,
+      }
     })
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error(`OpenRouter API error ${response.status}:`, errorText);
-    throw new Error(`OpenRouter API error: ${response.status}`);
+    console.error(`Gemini API error ${response.status}:`, errorText);
+    throw new Error(`Gemini API error: ${response.status}`);
   }
 
   const data = await response.json();
-  return data.choices[0]?.message?.content || "";
+  return data.candidates[0]?.content?.parts[0]?.text || "";
 }
 
 function truncateKnowledgeBase(knowledgeBase: string, maxLength: number = 30000): string {
@@ -92,7 +95,7 @@ Give a SHORT, friendly answer (1-2 sentences max) using your knowledge. Be conve
     
     return aiResponse || "I apologize, but I'm unable to respond at the moment. Please try again.";
   } catch (error) {
-    console.error("OpenRouter API error:", error);
+    console.error("Gemini API error:", error);
     
     // Intelligent fallback that references available content
     const kbPreview = knowledgeBase.slice(0, 500) + (knowledgeBase.length > 500 ? "..." : "");
