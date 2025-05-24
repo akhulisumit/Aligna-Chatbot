@@ -3,8 +3,63 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertChatbotSchema, insertChatMessageSchema } from "@shared/schema";
 import { generateChatbotResponse, processUploadedContent } from "./ai";
+import multer from "multer";
+import pdfParse from "pdf-parse";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configure multer for file uploads
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      // Allow text files and PDFs
+      const allowedTypes = ['text/plain', 'application/pdf', 'text/csv'];
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only text files and PDFs are allowed'));
+      }
+    }
+  });
+
+  // File upload endpoint
+  app.post("/api/upload-file", upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      let content = '';
+      const fileType = req.file.mimetype;
+
+      if (fileType === 'application/pdf') {
+        // Process PDF
+        const pdfData = await pdfParse(req.file.buffer);
+        content = pdfData.text;
+      } else if (fileType === 'text/plain' || fileType === 'text/csv') {
+        // Process text file
+        content = req.file.buffer.toString('utf-8');
+      }
+
+      if (!content.trim()) {
+        return res.status(400).json({ message: "No text content found in file" });
+      }
+
+      const processedContent = await processUploadedContent(content, 'text');
+      res.json({ 
+        processedContent,
+        originalFileName: req.file.originalname,
+        fileSize: req.file.size,
+        contentLength: content.length
+      });
+    } catch (error) {
+      console.error("Error processing uploaded file:", error);
+      res.status(500).json({ message: "Failed to process uploaded file" });
+    }
+  });
+
   // Create a new chatbot
   app.post("/api/chatbots", async (req, res) => {
     try {

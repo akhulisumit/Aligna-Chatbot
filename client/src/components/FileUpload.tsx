@@ -36,7 +36,7 @@ export default function FileUpload({ onContentProcessed }: FileUploadProps) {
     }, 300);
 
     try {
-      // Process content with OpenAI
+      // Process content
       const response = await apiRequest("POST", "/api/process-content", {
         content,
         type

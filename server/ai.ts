@@ -106,29 +106,52 @@ Give a SHORT, friendly answer (1-2 sentences max) using your knowledge. Be conve
 
 async function scrapeWebContent(url: string): Promise<string> {
   try {
-    const response = await axios.get(url, {
-      timeout: 10000,
+    // Clean and validate URL
+    let cleanUrl = url.trim();
+    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+      cleanUrl = 'https://' + cleanUrl;
+    }
+    
+    // Validate URL format
+    new URL(cleanUrl);
+    
+    const response = await axios.get(cleanUrl, {
+      timeout: 15000,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      },
+      maxRedirects: 5,
+      validateStatus: function (status) {
+        return status >= 200 && status < 300;
       }
     });
     
     const $ = cheerio.load(response.data);
     
-    // Remove script and style elements
-    $('script, style, nav, footer, header, .menu, .sidebar').remove();
+    // Remove unwanted elements
+    $('script, style, nav, footer, header, .menu, .sidebar, .advertisement, .ad, .popup').remove();
     
-    // Extract text content
-    const title = $('title').text() || '';
-    const headings = $('h1, h2, h3').map((_, el) => $(el).text()).get().join(' ');
-    const paragraphs = $('p').map((_, el) => $(el).text()).get().join(' ');
-    const listItems = $('li').map((_, el) => $(el).text()).get().join(' ');
+    // Extract content with better structure
+    const title = $('title').text().trim() || '';
+    const headings = $('h1, h2, h3, h4').map((_, el) => $(el).text().trim()).get().filter(text => text.length > 0).join(' ');
+    const paragraphs = $('p').map((_, el) => $(el).text().trim()).get().filter(text => text.length > 10).join(' ');
+    const listItems = $('li').map((_, el) => $(el).text().trim()).get().filter(text => text.length > 0).join(' ');
+    const articleContent = $('article').text().trim() || '';
+    const mainContent = $('main').text().trim() || '';
     
-    const content = `${title} ${headings} ${paragraphs} ${listItems}`.trim();
+    let content = `${title} ${headings} ${paragraphs} ${listItems} ${articleContent} ${mainContent}`.trim();
+    
+    // Clean up extra whitespace
+    content = content.replace(/\s+/g, ' ').trim();
+    
+    if (content.length < 50) {
+      throw new Error('Insufficient content extracted from website');
+    }
+    
     return content.slice(0, 50000); // Limit content size
   } catch (error) {
     console.error('Web scraping error:', error);
-    throw new Error('Failed to scrape website content');
+    throw new Error(`Failed to scrape website: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
