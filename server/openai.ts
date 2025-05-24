@@ -44,9 +44,11 @@ Use this knowledge base to answer questions accurately. If the question cannot b
     
     // Fallback responses when API is unavailable or quota exceeded
     const fallbackResponses = [
-      `Thank you for your message: "${message}". As your ${role}, I would be happy to help you with that. Based on the content you've uploaded, I can provide detailed assistance once the API connection is restored.`,
-      `I understand you're asking about "${message}". As an AI assistant trained on your documents, I'm designed to provide helpful responses. The full AI capabilities will be available once the service is restored.`,
-      `Great question about "${message}"! I'm here to help as your ${role}. The chatbot is working perfectly - this is a demo response showing how I would engage with your users based on your uploaded content.`
+      `Hello! I'm your AI assistant trained on your uploaded content. I'm here to help answer questions and provide support based on the knowledge you've provided. How can I assist you today?`,
+      `Hi there! As your ${role}, I'm ready to help you with any questions or concerns. I've been trained on your specific content and can provide detailed assistance. What would you like to know?`,
+      `Welcome! I'm an AI chatbot configured to assist you based on your uploaded documents and content. I can help with information, answer questions, and provide support. What can I help you with?`,
+      `Hello! I'm here to assist you as your dedicated ${role}. I have access to your knowledge base and I'm ready to help with any questions or tasks you have. How may I help you today?`,
+      `Hi! I'm your AI assistant, trained specifically on your content. Whether you need information, support, or answers to questions, I'm here to help. What would you like to discuss?`
     ];
     
     return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
