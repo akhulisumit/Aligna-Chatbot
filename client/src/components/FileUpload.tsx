@@ -65,20 +65,66 @@ export default function FileUpload({ onContentProcessed }: FileUploadProps) {
     }
   };
 
-  const handleFileUpload = (type: string) => {
+  const handleFileUpload = async (type: string) => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = type === 'pdf' ? '.pdf' : '.txt,.md,.doc,.docx';
+    input.accept = type === 'pdf' ? '.pdf' : '.txt,.csv,.md';
     
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const content = e.target?.result as string;
-          simulateUpload(content, type);
-        };
-        reader.readAsText(file);
+      if (!file) return;
+
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Simulate progress
+        const interval = setInterval(() => {
+          setUploadProgress(prev => {
+            const next = prev + Math.random() * 20;
+            if (next >= 90) {
+              clearInterval(interval);
+              return 90;
+            }
+            return next;
+          });
+        }, 200);
+
+        const response = await fetch('/api/upload-file', {
+          method: 'POST',
+          body: formData
+        });
+
+        clearInterval(interval);
+
+        if (!response.ok) {
+          throw new Error('File upload failed');
+        }
+
+        const data = await response.json();
+        setUploadProgress(100);
+
+        setTimeout(() => {
+          onContentProcessed(data.processedContent);
+          setIsUploading(false);
+          setUploadProgress(0);
+          toast({
+            title: "File Processed Successfully",
+            description: `${data.originalFileName} has been processed and is ready to use.`,
+          });
+        }, 500);
+
+      } catch (error) {
+        setIsUploading(false);
+        setUploadProgress(0);
+        toast({
+          title: "Upload Failed",
+          description: "There was an error processing your file. Please try again.",
+          variant: "destructive",
+        });
       }
     };
     
