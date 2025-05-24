@@ -44,6 +44,22 @@ async function makeAIRequest(prompt: string, maxTokens: number = 500, temperatur
   return data.choices[0]?.message?.content || "";
 }
 
+function truncateKnowledgeBase(knowledgeBase: string, maxLength: number = 30000): string {
+  if (knowledgeBase.length <= maxLength) {
+    return knowledgeBase;
+  }
+  
+  // Try to keep complete sections
+  const truncated = knowledgeBase.slice(0, maxLength);
+  const lastSectionEnd = truncated.lastIndexOf('===');
+  
+  if (lastSectionEnd > maxLength * 0.5) {
+    return truncated.slice(0, lastSectionEnd) + "\n\n=== (Content truncated for processing) ===";
+  }
+  
+  return truncated + "\n\n(Content truncated for processing)";
+}
+
 export async function generateChatbotResponse(
   message: string,
   knowledgeBase: string,
@@ -57,66 +73,92 @@ export async function generateChatbotResponse(
   try {
     const personalityPrompt = createPersonalityPrompt(personality, role);
     
-    const prompt = `You are a highly intelligent AI assistant with the following specific characteristics: ${personalityPrompt}
+    // Truncate knowledge base to fit within token limits
+    const truncatedKB = truncateKnowledgeBase(knowledgeBase, 30000);
+    
+    const prompt = `You are a ${personalityPrompt}
 
-IMPORTANT: You have access to this custom knowledge base that contains specific information about the user's business/content:
+KNOWLEDGE BASE:
+${truncatedKB}
 
-=== KNOWLEDGE BASE START ===
-${knowledgeBase}
-=== KNOWLEDGE BASE END ===
+USER QUESTION: ${message}
 
-Your primary job is to:
-1. Answer questions using ONLY the information from the knowledge base above
-2. Provide personalized responses based on the specific data in the knowledge base
-3. If asked about something not in the knowledge base, politely say "I don't have that specific information in my training data, but I can help with questions related to: [briefly mention what topics are covered in the knowledge base]"
-4. Always maintain your personality characteristics while being helpful and accurate
+INSTRUCTIONS:
+1. Answer the user's question using ONLY information from the knowledge base above
+2. Be specific and reference actual details from the content
+3. If the question isn't covered in the knowledge base, say "I don't have that specific information, but I can help with [mention what topics are in the knowledge base]"
+4. Maintain your personality traits while being accurate and helpful
 
-User's question: ${message}
+Provide a direct, personalized response based on the knowledge base:`;
 
-Respond according to your role as a ${role} and use the personality traits described above. Make sure your response is directly based on the knowledge base content when relevant.`;
-
-    const aiResponse = await makeAIRequest(prompt, 500, 0.7);
+    const aiResponse = await makeAIRequest(prompt, 400, 0.7);
     
     return aiResponse || "I apologize, but I'm unable to respond at the moment. Please try again.";
   } catch (error) {
     console.error("OpenRouter API error:", error);
     
-    // Intelligent fallback that still references the knowledge base
-    const fallbackResponses = [
-      `Hello! I'm your ${role} assistant. I have access to your custom knowledge base and I'm ready to help with questions related to your specific content. What would you like to know?`,
-      `Hi there! As your ${role}, I'm trained on your specific content and ready to provide personalized assistance. How can I help you today?`,
-      `Welcome! I'm an AI ${role} with access to your knowledge base. I can provide detailed answers based on your uploaded content. What questions do you have?`,
-      `Hello! I'm here as your dedicated ${role}. I have your specific knowledge base loaded and I'm ready to provide personalized support. What can I assist you with?`,
-      `Hi! I'm your AI ${role}, specifically trained on your content. I can help answer questions and provide support based on your knowledge base. What would you like to discuss?`
-    ];
+    // Intelligent fallback that references available content
+    const kbPreview = knowledgeBase.slice(0, 500) + (knowledgeBase.length > 500 ? "..." : "");
     
-    return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+    return `Hello! I'm your ${role} assistant. I have access to your knowledge base which contains information about: ${kbPreview.replace(/[=\n]/g, ' ').trim()}. How can I help you with questions related to this content?`;
   }
+}
+
+function chunkContent(content: string, maxChunkSize: number = 20000): string[] {
+  const chunks = [];
+  for (let i = 0; i < content.length; i += maxChunkSize) {
+    chunks.push(content.slice(i, i + maxChunkSize));
+  }
+  return chunks;
 }
 
 export async function processUploadedContent(content: string, type: 'pdf' | 'text' | 'url'): Promise<string> {
   try {
-    const prompt = `You are an expert content processor. Analyze and organize the following ${type} content into a structured knowledge base format that will be used to train an AI chatbot.
+    // If content is too large, chunk it and process in parts
+    if (content.length > 50000) {
+      console.log(`Large content detected (${content.length} chars), processing in chunks...`);
+      
+      const chunks = chunkContent(content, 20000);
+      const processedChunks = [];
+      
+      for (let i = 0; i < Math.min(chunks.length, 5); i++) { // Limit to 5 chunks
+        const chunk = chunks[i];
+        const prompt = `Extract and summarize the key information from this ${type} content chunk ${i + 1}. Focus on the most important facts, data, and actionable information:
 
-Your task:
-1. Extract all key information, facts, and important details
-2. Organize the content into clear topics and sections
-3. Include specific data, numbers, procedures, policies, or instructions if present
-4. Format it as a comprehensive knowledge base that an AI can reference to answer user questions accurately
-5. Preserve important context and relationships between different pieces of information
+${chunk}
 
-Content to process:
+Provide a concise summary that captures the essential information.`;
+
+        try {
+          const processed = await makeAIRequest(prompt, 1000, 0.3);
+          if (processed) {
+            processedChunks.push(`=== SECTION ${i + 1} ===\n${processed}`);
+          }
+        } catch (chunkError) {
+          console.error(`Error processing chunk ${i + 1}:`, chunkError);
+          // Include raw chunk if processing fails
+          processedChunks.push(`=== SECTION ${i + 1} ===\n${chunk.slice(0, 2000)}...`);
+        }
+      }
+      
+      return `=== KNOWLEDGE BASE ===\n\n${processedChunks.join('\n\n')}\n\n=== END KNOWLEDGE BASE ===`;
+    }
+    
+    // For smaller content, process normally
+    const prompt = `Extract and organize the key information from this ${type} content into a structured knowledge base:
+
 ${content}
 
-Please structure this as a detailed knowledge base that will enable accurate, personalized responses.`;
+Focus on the most important facts, data, and actionable information that will help answer user questions.`;
 
-    const processedContent = await makeAIRequest(prompt, 2000, 0.3);
+    const processedContent = await makeAIRequest(prompt, 1500, 0.3);
     
     return processedContent || content;
   } catch (error) {
     console.error("Content processing error:", error);
     
-    // Return the original content formatted as a knowledge base
+    // Return a trimmed version of the original content
+    const trimmedContent = content.length > 10000 ? content.slice(0, 10000) + "..." : content;
     const formattedContent = `
 === KNOWLEDGE BASE ===
 
@@ -124,11 +166,11 @@ Content Type: ${type.toUpperCase()}
 Source: Direct Input
 
 Main Content:
-${content}
+${trimmedContent}
 
 === END KNOWLEDGE BASE ===
 
-This content is now ready to be used by your AI assistant to provide personalized responses based on your specific information.
+This content is ready for your AI assistant to provide personalized responses.
     `.trim();
     
     return formattedContent;
