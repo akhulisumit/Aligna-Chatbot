@@ -2,6 +2,10 @@
 const OPENROUTER_API_KEY = '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';
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
+// Web scraping imports
+import axios from 'axios';
+import * as cheerio from 'cheerio';
+
 // Rate limiting helper
 let lastRequestTime = 0;
 const MIN_REQUEST_INTERVAL = 1000; // 1 second between requests
@@ -97,6 +101,34 @@ Give a SHORT, friendly answer (1-2 sentences max) using your knowledge. Be conve
   }
 }
 
+async function scrapeWebContent(url: string): Promise<string> {
+  try {
+    const response = await axios.get(url, {
+      timeout: 10000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
+    
+    const $ = cheerio.load(response.data);
+    
+    // Remove script and style elements
+    $('script, style, nav, footer, header, .menu, .sidebar').remove();
+    
+    // Extract text content
+    const title = $('title').text() || '';
+    const headings = $('h1, h2, h3').map((_, el) => $(el).text()).get().join(' ');
+    const paragraphs = $('p').map((_, el) => $(el).text()).get().join(' ');
+    const listItems = $('li').map((_, el) => $(el).text()).get().join(' ');
+    
+    const content = `${title} ${headings} ${paragraphs} ${listItems}`.trim();
+    return content.slice(0, 50000); // Limit content size
+  } catch (error) {
+    console.error('Web scraping error:', error);
+    throw new Error('Failed to scrape website content');
+  }
+}
+
 function chunkContent(content: string, maxChunkSize: number = 20000): string[] {
   const chunks = [];
   for (let i = 0; i < content.length; i += maxChunkSize) {
@@ -107,11 +139,25 @@ function chunkContent(content: string, maxChunkSize: number = 20000): string[] {
 
 export async function processUploadedContent(content: string, type: 'pdf' | 'text' | 'url'): Promise<string> {
   try {
+    let actualContent = content;
+    
+    // Handle URL scraping
+    if (type === 'url') {
+      try {
+        console.log(`Scraping website: ${content}`);
+        actualContent = await scrapeWebContent(content);
+        console.log(`Scraped ${actualContent.length} characters from website`);
+      } catch (error) {
+        console.error('Failed to scrape URL:', error);
+        return `Failed to scrape website content from: ${content}. Please check if the URL is accessible.`;
+      }
+    }
+    
     // If content is too large, chunk it and process in parts
-    if (content.length > 50000) {
-      console.log(`Large content detected (${content.length} chars), processing in chunks...`);
+    if (actualContent.length > 50000) {
+      console.log(`Large content detected (${actualContent.length} chars), processing in chunks...`);
       
-      const chunks = chunkContent(content, 20000);
+      const chunks = chunkContent(actualContent, 20000);
       const processedChunks = [];
       
       for (let i = 0; i < Math.min(chunks.length, 5); i++) { // Limit to 5 chunks
@@ -140,7 +186,7 @@ Write it clearly without using markdown headers or special formatting.`;
     // For smaller content, process normally
     const prompt = `Take this content and organize the key information in a simple, clear format that a chatbot can use to answer questions. Don't use markdown formatting, just write it naturally:
 
-${content}
+${actualContent}
 
 Focus on the important facts and details that would be useful for answering user questions.`;
 
