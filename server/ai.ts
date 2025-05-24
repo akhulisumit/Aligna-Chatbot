@@ -1,5 +1,5 @@
 // OpenRouter AI configuration
-const OPENROUTER_API_KEY = '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';
+const OPENROUTER_API_KEY = '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';
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 // Web scraping imports
