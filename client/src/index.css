@@ -5,33 +5,33 @@
 @tailwind utilities;
 
 :root {
-  --background: 0 0% 100%; /* #FFFFFF */
-  --foreground: 240 10% 4%; /* #0A0A0A */
-  --muted: 210 40% 98%; /* #F8FAFC */
-  --muted-foreground: 215 16% 47%; /* #64748B */
-  --popover: 0 0% 100%; /* #FFFFFF */
-  --popover-foreground: 240 10% 4%; /* #0A0A0A */
-  --card: 0 0% 100%; /* #FFFFFF */
-  --card-foreground: 240 10% 4%; /* #0A0A0A */
-  --border: 214 32% 91%; /* #E2E8F0 */
-  --input: 214 32% 91%; /* #E2E8F0 */
-  --primary: 221 83% 53%; /* #3B82F6 */
-  --primary-foreground: 210 40% 98%; /* #F8FAFC */
-  --secondary: 210 40% 95%; /* #F1F5F9 */
-  --secondary-foreground: 222 84% 5%; /* #0F172A */
+  --background: 210 11% 4%; /* #0A0A0A */
+  --foreground: 0 0% 98%; /* #FAFAFA */
+  --muted: 240 4% 11%; /* #1A1A1A */
+  --muted-foreground: 240 5% 65%; /* #A1A1AA */
+  --popover: 240 10% 4%; /* #0A0A0A */
+  --popover-foreground: 0 0% 98%; /* #FAFAFA */
+  --card: 240 4% 11%; /* #1A1A1A */
+  --card-foreground: 0 0% 98%; /* #FAFAFA */
+  --border: 240 4% 16%; /* #2A2A2A */
+  --input: 240 4% 16%; /* #2A2A2A */
+  --primary: 195 100% 50%; /* #00D9FF */
+  --primary-foreground: 240 10% 4%; /* #0A0A0A */
+  --secondary: 240 4% 16%; /* #2A2A2A */
+  --secondary-foreground: 0 0% 98%; /* #FAFAFA */
   --accent: 258 90% 66%; /* #8B5CF6 */
-  --accent-foreground: 210 40% 98%; /* #F8FAFC */
-  --destructive: 0 84% 60%; /* #EF4444 */
-  --destructive-foreground: 210 40% 98%; /* #F8FAFC */
-  --ring: 221 83% 53%; /* #3B82F6 */
+  --accent-foreground: 0 0% 98%; /* #FAFAFA */
+  --destructive: 0 62% 30%; /* #7F1D1D */
+  --destructive-foreground: 0 0% 98%; /* #FAFAFA */
+  --ring: 195 100% 50%; /* #00D9FF */
   --radius: 0.75rem;
 
-  /* Custom variables for light glassmorphism */
+  /* Custom variables for glassmorphism */
   --neon-cyan: 195 100% 50%; /* #00D9FF */
   --neon-purple: 258 90% 66%; /* #8B5CF6 */
-  --light-primary: 0 0% 100%; /* #FFFFFF */
-  --light-secondary: 210 40% 98%; /* #F8FAFC */
-  --light-tertiary: 214 32% 91%; /* #E2E8F0 */
+  --dark-primary: 210 11% 4%; /* #0A0A0A */
+  --dark-secondary: 240 4% 11%; /* #1A1A1A */
+  --dark-tertiary: 240 4% 16%; /* #2A2A2A */
 }
 
 .dark {
@@ -73,23 +73,23 @@
 
 @layer components {
   .glass-card {
-    @apply bg-white/80 backdrop-blur-xl border border-gray-200/50 shadow-lg;
+    @apply bg-muted/70 backdrop-blur-xl border border-white/10 shadow-2xl;
   }
 
   .glow-button:hover {
-    box-shadow: 0 0 30px hsl(var(--primary) / 0.3);
+    box-shadow: 0 0 30px hsl(var(--neon-cyan) / 0.5);
   }
 
   .text-glow {
-    text-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+    text-shadow: 0 0 20px hsl(var(--neon-cyan) / 0.5);
   }
 
   .gradient-bg {
     background: linear-gradient(-45deg, 
-      hsl(var(--light-primary)), 
-      hsl(var(--light-secondary)), 
-      hsl(var(--light-tertiary)), 
-      hsl(var(--light-secondary)));
+      hsl(var(--dark-primary)), 
+      hsl(var(--dark-secondary)), 
+      hsl(var(--dark-tertiary)), 
+      hsl(var(--dark-secondary)));
     background-size: 400% 400%;
     animation: gradient 15s ease infinite;
   }
