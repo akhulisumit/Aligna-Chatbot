@@ -26,23 +26,23 @@ export default function Hero() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         {/* Main Hero Content */}
         <div className="text-center mb-20">
-          <div className="inline-block p-1 rounded-full bg-gradient-to-r from-gray-700 to-gray-800 mb-8">
-            <div className="bg-black rounded-full px-6 py-2">
-              <span className="text-sm font-medium text-gray-400">⚡ Enterprise AI Platform</span>
+          <div className="inline-block p-1 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 mb-8">
+            <div className="bg-white rounded-full px-6 py-2 shadow-sm">
+              <span className="text-sm font-medium text-slate-600">⚡ Enterprise AI Platform</span>
             </div>
           </div>
           
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight">
-            <span className="block text-white mb-4">Build Intelligent</span>
-            <span className="block bg-gradient-to-r from-gray-300 via-gray-100 to-gray-300 bg-clip-text text-transparent">
+            <span className="block text-slate-900 mb-4">Build Intelligent</span>
+            <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
               AI Chatbots
             </span>
-            <span className="block text-gray-200 text-4xl md:text-5xl lg:text-6xl mt-4">
+            <span className="block text-slate-700 text-4xl md:text-5xl lg:text-6xl mt-4">
               In Minutes
             </span>
           </h1>
           
-          <p className="text-xl md:text-2xl lg:text-3xl text-gray-400 mb-12 max-w-4xl mx-auto leading-relaxed font-light">
+          <p className="text-xl md:text-2xl lg:text-3xl text-slate-600 mb-12 max-w-4xl mx-auto leading-relaxed font-light">
             Transform your business with AI-powered chatbots that understand your content, 
             <br className="hidden md:block" />
             engage your customers, and deliver exceptional experiences.
