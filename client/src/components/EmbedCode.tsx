@@ -63,10 +63,10 @@ export default function EmbedCode({ chatbot }: EmbedCodeProps) {
     <section id="deploy" className="py-20 bg-gradient-to-b from-background to-secondary">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white">
-            Deploy Your <span className="text-neon-purple">Chatbot</span>
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 text-foreground">
+            Deploy Your <span className="text-primary">Chatbot</span>
           </h2>
-          <p className="text-xl text-gray-200 max-w-3xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Get your embed code and start using your AI assistant on any website
           </p>
         </div>
@@ -92,8 +92,8 @@ export default function EmbedCode({ chatbot }: EmbedCodeProps) {
                       onClick={() => setWidgetType("bubble")}
                       className={`p-4 h-auto text-center ${
                         widgetType === "bubble"
-                          ? "bg-gradient-to-r from-neon-cyan to-neon-purple"
-                          : "bg-secondary border-2 border-transparent hover:border-muted"
+                          ? "bg-gradient-to-r from-primary to-accent"
+                          : "bg-secondary border-2 border-transparent hover:border-border"
                       }`}
                     >
                       <div>
@@ -106,8 +106,8 @@ export default function EmbedCode({ chatbot }: EmbedCodeProps) {
                       onClick={() => setWidgetType("inline")}
                       className={`p-4 h-auto text-center ${
                         widgetType === "inline"
-                          ? "bg-gradient-to-r from-neon-cyan to-neon-purple"
-                          : "bg-secondary border-2 border-transparent hover:border-muted"
+                          ? "bg-gradient-to-r from-primary to-accent"
+                          : "bg-secondary border-2 border-transparent hover:border-border"
                       }`}
                     >
                       <div>
@@ -147,8 +147,8 @@ export default function EmbedCode({ chatbot }: EmbedCodeProps) {
                         onClick={() => setWidgetSize(size)}
                         className={`p-3 h-auto text-center ${
                           widgetSize === size
-                            ? "bg-gradient-to-r from-neon-purple to-purple-600"
-                            : "bg-secondary border-2 border-transparent hover:border-muted"
+                            ? "bg-gradient-to-r from-accent to-primary"
+                            : "bg-secondary border-2 border-transparent hover:border-border"
                         }`}
                       >
                         <div>
@@ -174,7 +174,7 @@ export default function EmbedCode({ chatbot }: EmbedCodeProps) {
                     </span>
                     <Button
                       onClick={copyEmbedCode}
-                      className="bg-gradient-to-r from-neon-cyan to-neon-purple hover:scale-105 transition-transform duration-200"
+                      className="bg-gradient-to-r from-primary to-accent hover:scale-105 transition-transform duration-200"
                     >
                       <Copy className="mr-2 w-4 h-4" />
                       Copy Code
@@ -195,13 +195,13 @@ export default function EmbedCode({ chatbot }: EmbedCodeProps) {
                     </span>
                     <Button
                       onClick={copyShareLink}
-                      className="bg-gradient-to-r from-neon-purple to-purple-600 hover:scale-105 transition-transform duration-200"
+                      className="bg-gradient-to-r from-accent to-primary hover:scale-105 transition-transform duration-200"
                     >
                       <Link className="mr-2 w-4 h-4" />
                       Copy Link
                     </Button>
                   </div>
-                  <div className="bg-secondary rounded-xl p-4 font-mono text-sm text-neon-cyan break-all">
+                  <div className="bg-secondary rounded-xl p-4 font-mono text-sm text-primary break-all">
                     {chatbot.shareLink}
                   </div>
                 </CardContent>
@@ -253,7 +253,7 @@ export default function EmbedCode({ chatbot }: EmbedCodeProps) {
                   widgetPosition === "top-right" ? "top-20 right-6" :
                   "top-20 left-6"
                 }`}>
-                  <Button className="w-16 h-16 bg-gradient-to-r from-neon-cyan to-neon-purple rounded-full text-white text-xl shadow-2xl hover:scale-110 transition-transform duration-200 animate-pulse">
+                  <Button className="w-16 h-16 bg-gradient-to-r from-primary to-accent rounded-full text-white text-xl shadow-2xl hover:scale-110 transition-transform duration-200 animate-pulse">
                     <MessageCircle />
                   </Button>
                 </div>
@@ -272,11 +272,11 @@ export default function EmbedCode({ chatbot }: EmbedCodeProps) {
               {/* Deployment Stats */}
               <div className="grid grid-cols-2 gap-6 mt-8">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-neon-cyan mb-1">0</div>
+                  <div className="text-2xl font-bold text-primary mb-1">0</div>
                   <div className="text-sm text-muted-foreground">Total Chats</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-neon-purple mb-1">99.9%</div>
+                  <div className="text-2xl font-bold text-accent mb-1">99.9%</div>
                   <div className="text-sm text-muted-foreground">Uptime</div>
                 </div>
               </div>
