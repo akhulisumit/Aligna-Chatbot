@@ -1,4 +1,4 @@
-import { users, chatbots, chatMessages, type User, type InsertUser, type Chatbot, type InsertChatbot, type ChatMessage, type InsertChatMessage } from "@shared/schema";
+import { users, chatbots, chatMessages, websites, type User, type InsertUser, type Chatbot, type InsertChatbot, type ChatMessage, type InsertChatMessage, type Website, type InsertWebsite } from "@shared/schema";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -14,23 +14,33 @@ export interface IStorage {
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
   getChatMessages(chatbotId: number): Promise<ChatMessage[]>;
   deleteChatMessages(chatbotId: number): Promise<boolean>;
+
+  // New methods for website crawling data
+  createWebsite(website: InsertWebsite): Promise<Website>;
+  getWebsite(id: number): Promise<Website | undefined>;
+  getWebsitesForChatbot(chatbotId: number): Promise<Website[]>;
+  deleteWebsite(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private chatbots: Map<number, Chatbot>;
   private chatMessages: Map<number, ChatMessage>;
+  private websites: Map<number, Website>; // New
   private currentUserId: number;
   private currentChatbotId: number;
   private currentMessageId: number;
+  private currentWebsiteId: number; // New
 
   constructor() {
     this.users = new Map();
     this.chatbots = new Map();
     this.chatMessages = new Map();
+    this.websites = new Map(); // New
     this.currentUserId = 1;
     this.currentChatbotId = 1;
     this.currentMessageId = 1;
+    this.currentWebsiteId = 1; // New
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -111,6 +121,28 @@ export class MemStorage implements IStorage {
     });
     
     return true;
+  }
+
+  // New methods for website crawling data
+  async createWebsite(insertWebsite: InsertWebsite): Promise<Website> {
+    const id = this.currentWebsiteId++;
+    const website: Website = { ...insertWebsite, id, crawledAt: new Date() };
+    this.websites.set(id, website);
+    return website;
+  }
+
+  async getWebsite(id: number): Promise<Website | undefined> {
+    return this.websites.get(id);
+  }
+
+  async getWebsitesForChatbot(chatbotId: number): Promise<Website[]> {
+    return Array.from(this.websites.values()).filter(
+      (website) => website.chatbotId === chatbotId
+    );
+  }
+
+  async deleteWebsite(id: number): Promise<boolean> {
+    return this.websites.delete(id);
   }
 }
 
