@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertChatbotSchema, insertChatMessageSchema } from "@shared/schema";
 import { generateChatbotResponse, processUploadedContent } from "./ai";
+import { crawlWebPage } from './crawler'; // NEW IMPORT for web crawling functionality
 // File upload functionality (simplified for reliability)
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -165,6 +166,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error processing content:", error);
       res.status(500).json({ message: "Failed to process content" });
+    }
+  });
+
+  // NEW: Endpoint for web crawling and knowledge base integration
+  app.post("/api/crawl", async (req, res) => {
+    try {
+      const { url, chatbotId } = req.body;
+
+      if (!url || typeof url !== 'string' || !url.startsWith('http')) {
+        return res.status(400).json({ message: "A valid URL (http/https) is required for crawling." });
+      }
+
+      console.log(`Initiating web crawl for URL: ${url}`);
+      // Call the dedicated crawling module
+      const crawledContent = await crawlWebPage(url);
+
+      if (!crawledContent) {
+        return res.status(500).json({ message: "Failed to retrieve content from the URL. It might be inaccessible or empty." });
+      }
+
+      // Process the crawled content using the existing AI component
+      const processedKnowledge = await processUploadedContent(crawledContent, 'text');
+
+      let result: any = { url, processedContent: processedKnowledge };
+
+      // If a chatbotId is provided, integrate the crawled content into its knowledge base
+      if (chatbotId) {
+        const id = parseInt(chatbotId);
+        if (isNaN(id)) {
+          return res.status(400).json({ message: "Invalid chatbotId provided." });
+        }
+
+        const existingChatbot = await storage.getChatbot(id);
+
+        if (!existingChatbot) {
+          return res.status(404).json({ message: "Chatbot not found for knowledge base integration." });
+        }
+
+        // Append the new processed knowledge to the existing knowledge base
+        // Assuming knowledgeBase is a string. If it's an array, this logic would need adjustment.
+        const updatedKnowledgeBase = `${existingChatbot.knowledgeBase ? existingChatbot.knowledgeBase + '\n\n' : ''}${processedKnowledge}`;
+        
+        const updatedChatbot = await storage.updateChatbot(id, {
+          knowledgeBase: updatedKnowledgeBase
+        });
+
+        result = updatedChatbot; // Return the updated chatbot object
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error during web crawling or content processing:", error);
+      res.status(500).json({ message: "Failed to process web content due to an internal server error." });
     }
   });
 

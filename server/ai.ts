@@ -2,9 +2,7 @@
 const GEMINI_API_KEY = 'AIzaSyCYw5FL8mxz1m2EvebjRcyhG4tDpguTSUA';
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
-// Web scraping imports
-import axios from 'axios';
-import * as cheerio from 'cheerio';
+import { scrapeWebContent } from './webCrawler'; // New import
 
 // Rate limiting helper
 let lastRequestTime = 0;
@@ -32,7 +30,7 @@ async function makeAIRequest(prompt: string, maxTokens: number = 500, temperatur
               text: prompt
             }
           ]
-        }
+        } 
       ],
       generationConfig: {
         maxOutputTokens: maxTokens,
@@ -83,13 +81,7 @@ export async function generateChatbotResponse(
     // Truncate knowledge base to fit within token limits
     const truncatedKB = truncateKnowledgeBase(knowledgeBase, 30000);
     
-    const prompt = `You are a ${role} with this personality: ${personalityPrompt}
-
-Knowledge: ${truncatedKB}
-
-User: "${message}"
-
-Give a SHORT, friendly answer (1-2 sentences max) using your knowledge. Be conversational and helpful, no formatting:`;
+    const prompt = `You are a ${role} with this personality: ${personalityPrompt}\n\nKnowledge: ${truncatedKB}\n\nUser: "${message}"\n\nGive a SHORT, friendly answer (1-2 sentences max) using your knowledge. Be conversational and helpful, no formatting:`;
 
     const aiResponse = await makeAIRequest(prompt, 150, 0.7);
     
@@ -101,57 +93,6 @@ Give a SHORT, friendly answer (1-2 sentences max) using your knowledge. Be conve
     const kbPreview = knowledgeBase.slice(0, 500) + (knowledgeBase.length > 500 ? "..." : "");
     
     return `Hello! I'm your ${role} assistant. I have access to your knowledge base which contains information about: ${kbPreview.replace(/[=\n]/g, ' ').trim()}. How can I help you with questions related to this content?`;
-  }
-}
-
-async function scrapeWebContent(url: string): Promise<string> {
-  try {
-    // Clean and validate URL
-    let cleanUrl = url.trim();
-    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
-      cleanUrl = 'https://' + cleanUrl;
-    }
-    
-    // Validate URL format
-    new URL(cleanUrl);
-    
-    const response = await axios.get(cleanUrl, {
-      timeout: 15000,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-      },
-      maxRedirects: 5,
-      validateStatus: function (status) {
-        return status >= 200 && status < 300;
-      }
-    });
-    
-    const $ = cheerio.load(response.data);
-    
-    // Remove unwanted elements
-    $('script, style, nav, footer, header, .menu, .sidebar, .advertisement, .ad, .popup').remove();
-    
-    // Extract content with better structure
-    const title = $('title').text().trim() || '';
-    const headings = $('h1, h2, h3, h4').map((_, el) => $(el).text().trim()).get().filter(text => text.length > 0).join(' ');
-    const paragraphs = $('p').map((_, el) => $(el).text().trim()).get().filter(text => text.length > 10).join(' ');
-    const listItems = $('li').map((_, el) => $(el).text().trim()).get().filter(text => text.length > 0).join(' ');
-    const articleContent = $('article').text().trim() || '';
-    const mainContent = $('main').text().trim() || '';
-    
-    let content = `${title} ${headings} ${paragraphs} ${listItems} ${articleContent} ${mainContent}`.trim();
-    
-    // Clean up extra whitespace
-    content = content.replace(/\s+/g, ' ').trim();
-    
-    if (content.length < 50) {
-      throw new Error('Insufficient content extracted from website');
-    }
-    
-    return content.slice(0, 50000); // Limit content size
-  } catch (error) {
-    console.error('Web scraping error:', error);
-    throw new Error(`Failed to scrape website: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -188,11 +129,7 @@ export async function processUploadedContent(content: string, type: 'pdf' | 'tex
       
       for (let i = 0; i < Math.min(chunks.length, 5); i++) { // Limit to 5 chunks
         const chunk = chunks[i];
-        const prompt = `Extract the key information from this content and organize it in a simple, easy-to-read format. Focus on facts, important details, and anything that would help answer user questions:
-
-${chunk}
-
-Write it clearly without using markdown headers or special formatting.`;
+        const prompt = `Extract the key information from this content and organize it in a simple, easy-to-read format. Focus on facts, important details, and anything that would help answer user questions:\n\n${chunk}\n\nWrite it clearly without using markdown headers or special formatting.`;
 
         try {
           const processed = await makeAIRequest(prompt, 1000, 0.3);
@@ -210,11 +147,7 @@ Write it clearly without using markdown headers or special formatting.`;
     }
     
     // For smaller content, process normally
-    const prompt = `Take this content and organize the key information in a simple, clear format that a chatbot can use to answer questions. Don't use markdown formatting, just write it naturally:
-
-${actualContent}
-
-Focus on the important facts and details that would be useful for answering user questions.`;
+    const prompt = `Take this content and organize the key information in a simple, clear format that a chatbot can use to answer questions. Don't use markdown formatting, just write it naturally:\n\n${actualContent}\n\nFocus on the important facts and details that would be useful for answering user questions.`;
 
     const processedContent = await makeAIRequest(prompt, 1500, 0.3);
     
@@ -224,19 +157,7 @@ Focus on the important facts and details that would be useful for answering user
     
     // Return a trimmed version of the original content
     const trimmedContent = content.length > 10000 ? content.slice(0, 10000) + "..." : content;
-    const formattedContent = `
-=== KNOWLEDGE BASE ===
-
-Content Type: ${type.toUpperCase()}
-Source: Direct Input
-
-Main Content:
-${trimmedContent}
-
-=== END KNOWLEDGE BASE ===
-
-This content is ready for your AI assistant to provide personalized responses.
-    `.trim();
+    const formattedContent = `\n=== KNOWLEDGE BASE ===\n\nContent Type: ${type.toUpperCase()}\nSource: Direct Input\n\nMain Content:\n${trimmedContent}\n\n=== END KNOWLEDGE BASE ===\n\nThis content is ready for your AI assistant to provide personalized responses.\n    `.trim();
     
     return formattedContent;
   }

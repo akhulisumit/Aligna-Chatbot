@@ -1,5 +1,16 @@
 import { users, chatbots, chatMessages, type User, type InsertUser, type Chatbot, type InsertChatbot, type ChatMessage, type InsertChatMessage } from "@shared/schema";
 
+// New types for crawled content, assuming eventual schema definition in @shared/schema
+export type KnowledgeSource = {
+  id: number;
+  chatbotId: number;
+  url: string;
+  content: string;
+  crawledAt: Date;
+};
+
+export type InsertKnowledgeSource = Omit<KnowledgeSource, 'id' | 'crawledAt'>;
+
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -14,23 +25,32 @@ export interface IStorage {
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
   getChatMessages(chatbotId: number): Promise<ChatMessage[]>;
   deleteChatMessages(chatbotId: number): Promise<boolean>;
+
+  // New methods for integrating crawled data
+  createKnowledgeSource(source: InsertKnowledgeSource): Promise<KnowledgeSource>;
+  getKnowledgeSourcesByChatbot(chatbotId: number): Promise<KnowledgeSource[]>;
+  deleteKnowledgeSources(chatbotId: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private chatbots: Map<number, Chatbot>;
   private chatMessages: Map<number, ChatMessage>;
+  private knowledgeSources: Map<number, KnowledgeSource>; // New property for crawled content
   private currentUserId: number;
   private currentChatbotId: number;
   private currentMessageId: number;
+  private currentKnowledgeSourceId: number; // New ID counter
 
   constructor() {
     this.users = new Map();
     this.chatbots = new Map();
     this.chatMessages = new Map();
+    this.knowledgeSources = new Map(); // Initialize new map
     this.currentUserId = 1;
     this.currentChatbotId = 1;
     this.currentMessageId = 1;
+    this.currentKnowledgeSourceId = 1; // Initialize new ID counter
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -110,6 +130,30 @@ export class MemStorage implements IStorage {
       this.chatMessages.delete(message.id);
     });
     
+    return true;
+  }
+
+  // New methods for knowledge source management
+  async createKnowledgeSource(insertSource: InsertKnowledgeSource): Promise<KnowledgeSource> {
+    const id = this.currentKnowledgeSourceId++;
+    const knowledgeSource: KnowledgeSource = { ...insertSource, id, crawledAt: new Date() };
+    this.knowledgeSources.set(id, knowledgeSource);
+    return knowledgeSource;
+  }
+
+  async getKnowledgeSourcesByChatbot(chatbotId: number): Promise<KnowledgeSource[]> {
+    return Array.from(this.knowledgeSources.values()).filter(
+      (source) => source.chatbotId === chatbotId
+    );
+  }
+
+  async deleteKnowledgeSources(chatbotId: number): Promise<boolean> {
+    const sourcesToDelete = Array.from(this.knowledgeSources.values()).filter(
+      (source) => source.chatbotId === chatbotId
+    );
+    sourcesToDelete.forEach((source) => {
+      this.knowledgeSources.delete(source.id);
+    });
     return true;
   }
 }
