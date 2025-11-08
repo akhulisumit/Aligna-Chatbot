@@ -1,4 +1,4 @@
-import { users, chatbots, chatMessages, type User, type InsertUser, type Chatbot, type InsertChatbot, type ChatMessage, type InsertChatMessage } from "@shared/schema";
+import { users, chatbots, chatMessages, type User, type InsertUser, type Chatbot, type InsertChatbot, type ChatMessage, type InsertChatMessage, type ScrapedContent, type InsertScrapedContent } from "@shared/schema";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -14,23 +14,34 @@ export interface IStorage {
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
   getChatMessages(chatbotId: number): Promise<ChatMessage[]>;
   deleteChatMessages(chatbotId: number): Promise<boolean>;
+
+  // New methods for scraped content
+  createScrapedContent(content: InsertScrapedContent): Promise<ScrapedContent>;
+  getScrapedContent(id: number): Promise<ScrapedContent | undefined>;
+  getScrapedContentsByChatbot(chatbotId: number): Promise<ScrapedContent[]>;
+  deleteScrapedContent(id: number): Promise<boolean>;
+  deleteScrapedContentsByChatbot(chatbotId: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private chatbots: Map<number, Chatbot>;
   private chatMessages: Map<number, ChatMessage>;
+  private scrapedContents: Map<number, ScrapedContent>; // New map for scraped content
   private currentUserId: number;
   private currentChatbotId: number;
   private currentMessageId: number;
+  private currentScrapedContentId: number; // New ID counter for scraped content
 
   constructor() {
     this.users = new Map();
     this.chatbots = new Map();
     this.chatMessages = new Map();
+    this.scrapedContents = new Map(); // Initialize new map
     this.currentUserId = 1;
     this.currentChatbotId = 1;
     this.currentMessageId = 1;
+    this.currentScrapedContentId = 1; // Initialize new ID counter
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -108,6 +119,40 @@ export class MemStorage implements IStorage {
     
     messages.forEach((message) => {
       this.chatMessages.delete(message.id);
+    });
+    
+    return true;
+  }
+
+  // New methods for scraped content
+  async createScrapedContent(insertContent: InsertScrapedContent): Promise<ScrapedContent> {
+    const id = this.currentScrapedContentId++;
+    const content: ScrapedContent = { ...insertContent, id, extractedAt: new Date() };
+    this.scrapedContents.set(id, content);
+    return content;
+  }
+
+  async getScrapedContent(id: number): Promise<ScrapedContent | undefined> {
+    return this.scrapedContents.get(id);
+  }
+
+  async getScrapedContentsByChatbot(chatbotId: number): Promise<ScrapedContent[]> {
+    return Array.from(this.scrapedContents.values()).filter(
+      (content) => content.chatbotId === chatbotId
+    );
+  }
+
+  async deleteScrapedContent(id: number): Promise<boolean> {
+    return this.scrapedContents.delete(id);
+  }
+
+  async deleteScrapedContentsByChatbot(chatbotId: number): Promise<boolean> {
+    const contentsToDelete = Array.from(this.scrapedContents.values()).filter(
+      (content) => content.chatbotId === chatbotId
+    );
+    
+    contentsToDelete.forEach((content) => {
+      this.scrapedContents.delete(content.id);
     });
     
     return true;

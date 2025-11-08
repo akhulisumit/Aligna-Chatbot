@@ -32,6 +32,17 @@ export const chatMessages = pgTable("chat_messages", {
   timestamp: text("timestamp").notNull(),
 });
 
+// New schema for crawled documents
+export const crawledDocuments = pgTable("crawled_documents", {
+  id: serial("id").primaryKey(),
+  url: text("url").notNull().unique(),
+  title: text("title"),
+  content: text("content"),
+  crawledAt: text("crawled_at").notNull(),
+  processedSuccessfully: boolean("processed_successfully").notNull().default(false),
+  errorDetails: jsonb("error_details").$type<{ message: string; stack?: string }>(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -52,9 +63,20 @@ export const insertChatMessageSchema = createInsertSchema(chatMessages).pick({
   timestamp: true,
 });
 
+export const insertCrawledDocumentSchema = createInsertSchema(crawledDocuments).pick({
+  url: true,
+  title: true,
+  content: true,
+  crawledAt: true,
+  processedSuccessfully: true,
+  errorDetails: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertChatbot = z.infer<typeof insertChatbotSchema>;
 export type Chatbot = typeof chatbots.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
+export type InsertCrawledDocument = z.infer<typeof insertCrawledDocumentSchema>;
+export type CrawledDocument = typeof crawledDocuments.$inferSelect;
