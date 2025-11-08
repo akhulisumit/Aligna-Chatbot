@@ -1,4 +1,4 @@
-import { users, chatbots, chatMessages, type User, type InsertUser, type Chatbot, type InsertChatbot, type ChatMessage, type InsertChatMessage } from "@shared/schema";
+import { users, chatbots, chatMessages, type User, type InsertUser, type Chatbot, type InsertChatbot, type ChatMessage, type InsertChatMessage, type WebsiteSource, type InsertWebsiteSource } from "@shared/schema";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -14,23 +14,35 @@ export interface IStorage {
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
   getChatMessages(chatbotId: number): Promise<ChatMessage[]>;
   deleteChatMessages(chatbotId: number): Promise<boolean>;
+
+  // WebsiteSource storage methods
+  createWebsiteSource(source: InsertWebsiteSource): Promise<WebsiteSource>;
+  getWebsiteSource(id: number): Promise<WebsiteSource | undefined>;
+  getWebsiteSourcesByChatbotId(chatbotId: number): Promise<WebsiteSource[]>;
+  updateWebsiteSource(id: number, updates: Partial<WebsiteSource>): Promise<WebsiteSource | undefined>;
+  deleteWebsiteSource(id: number): Promise<boolean>;
+  deleteWebsiteSourcesByChatbotId(chatbotId: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private chatbots: Map<number, Chatbot>;
   private chatMessages: Map<number, ChatMessage>;
+  private websiteSources: Map<number, WebsiteSource>; // Added for crawling data
   private currentUserId: number;
   private currentChatbotId: number;
   private currentMessageId: number;
+  private currentWebsiteSourceId: number; // Added for crawling data
 
   constructor() {
     this.users = new Map();
     this.chatbots = new Map();
     this.chatMessages = new Map();
+    this.websiteSources = new Map(); // Initialize the new map
     this.currentUserId = 1;
     this.currentChatbotId = 1;
     this.currentMessageId = 1;
+    this.currentWebsiteSourceId = 1; // Initialize new ID counter
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -108,6 +120,54 @@ export class MemStorage implements IStorage {
     
     messages.forEach((message) => {
       this.chatMessages.delete(message.id);
+    });
+    
+    return true;
+  }
+
+  // WebsiteSource storage methods
+  async createWebsiteSource(insertSource: InsertWebsiteSource): Promise<WebsiteSource> {
+    const id = this.currentWebsiteSourceId++;
+    const source: WebsiteSource = { 
+      ...insertSource,
+      id,
+      crawledAt: insertSource.crawledAt || new Date(),
+      status: insertSource.status || 'pending'
+    };
+    this.websiteSources.set(id, source);
+    return source;
+  }
+
+  async getWebsiteSource(id: number): Promise<WebsiteSource | undefined> {
+    return this.websiteSources.get(id);
+  }
+
+  async getWebsiteSourcesByChatbotId(chatbotId: number): Promise<WebsiteSource[]> {
+    return Array.from(this.websiteSources.values()).filter(
+      (source) => source.chatbotId === chatbotId
+    );
+  }
+
+  async updateWebsiteSource(id: number, updates: Partial<WebsiteSource>): Promise<WebsiteSource | undefined> {
+    const source = this.websiteSources.get(id);
+    if (!source) return undefined;
+    
+    const updatedSource = { ...source, ...updates };
+    this.websiteSources.set(id, updatedSource);
+    return updatedSource;
+  }
+
+  async deleteWebsiteSource(id: number): Promise<boolean> {
+    return this.websiteSources.delete(id);
+  }
+
+  async deleteWebsiteSourcesByChatbotId(chatbotId: number): Promise<boolean> {
+    const sourcesToDelete = Array.from(this.websiteSources.values()).filter(
+      (source) => source.chatbotId === chatbotId
+    );
+    
+    sourcesToDelete.forEach((source) => {
+      this.websiteSources.delete(source.id);
     });
     
     return true;
