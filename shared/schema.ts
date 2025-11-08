@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, jsonb, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -24,6 +24,16 @@ export const chatbots = pgTable("chatbots", {
   isActive: boolean("is_active").notNull().default(true),
 });
 
+export const crawlingSources = pgTable("crawling_sources", {
+  id: serial("id").primaryKey(),
+  chatbotId: integer("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
+  url: text("url").notNull(),
+  status: text("status", { enum: ["pending", "crawling", "completed", "failed"] }).notNull().default("pending"),
+  lastCrawledAt: timestamp("last_crawled_at", { mode: "string", withTimezone: true }),
+  errorMessage: text("error_message"),
+  contentHash: text("content_hash"),
+});
+
 export const chatMessages = pgTable("chat_messages", {
   id: serial("id").primaryKey(),
   chatbotId: integer("chatbot_id").notNull(),
@@ -45,6 +55,14 @@ export const insertChatbotSchema = createInsertSchema(chatbots).pick({
   knowledgeBase: true,
 });
 
+export const insertCrawlingSourceSchema = createInsertSchema(crawlingSources).omit({
+  id: true,
+  status: true,
+  lastCrawledAt: true,
+  errorMessage: true,
+  contentHash: true,
+});
+
 export const insertChatMessageSchema = createInsertSchema(chatMessages).pick({
   chatbotId: true,
   message: true,
@@ -56,5 +74,7 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertChatbot = z.infer<typeof insertChatbotSchema>;
 export type Chatbot = typeof chatbots.$inferSelect;
+export type InsertCrawlingSource = z.infer<typeof insertCrawlingSourceSchema>;
+export type CrawlingSource = typeof crawlingSources.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;

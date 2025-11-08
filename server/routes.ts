@@ -3,6 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertChatbotSchema, insertChatMessageSchema } from "@shared/schema";
 import { generateChatbotResponse, processUploadedContent } from "./ai";
+// NEW: Import the crawling utility
+import { crawlWebsite } from "./crawler"; // Assuming server/crawler.ts will be created for the crawling logic
 // File upload functionality (simplified for reliability)
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -165,6 +167,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error processing content:", error);
       res.status(500).json({ message: "Failed to process content" });
+    }
+  });
+
+  // NEW: API endpoint to initiate website crawling
+  app.post("/api/crawl", async (req, res) => {
+    try {
+      const { url } = req.body;
+
+      if (!url) {
+        console.error("Crawl attempt failed: URL is missing.");
+        return res.status(400).json({ message: "URL is required for crawling" });
+      }
+
+      console.log(`Initiating crawl for URL: ${url}`);
+      const crawledContent = await crawlWebsite(url);
+
+      console.log(`Successfully crawled URL: ${url}. Content length: ${crawledContent.length}`);
+      res.json({ url, content: crawledContent });
+    } catch (error) {
+      console.error(`Error crawling URL: ${req.body?.url || 'N/A'}:`, error);
+      res.status(500).json({ message: "Failed to crawl website", error: (error as Error).message });
     }
   });
 

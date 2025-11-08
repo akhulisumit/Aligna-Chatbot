@@ -1,5 +1,17 @@
 import { users, chatbots, chatMessages, type User, type InsertUser, type Chatbot, type InsertChatbot, type ChatMessage, type InsertChatMessage } from "@shared/schema";
 
+// Temporary local types for CrawledData until @shared/schema is updated
+// In a real scenario, these would be imported from @shared/schema
+export type CrawledData = {
+  id: number;
+  chatbotId: number;
+  url: string;
+  content: string;
+  crawledAt: Date;
+};
+
+export type InsertCrawledData = Omit<CrawledData, 'id' | 'crawledAt'>;
+
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -14,23 +26,33 @@ export interface IStorage {
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
   getChatMessages(chatbotId: number): Promise<ChatMessage[]>;
   deleteChatMessages(chatbotId: number): Promise<boolean>;
+
+  // New methods for Crawled Data
+  createCrawledData(data: InsertCrawledData): Promise<CrawledData>;
+  getCrawledDataForChatbot(chatbotId: number): Promise<CrawledData[]>;
+  deleteCrawledData(id: number): Promise<boolean>;
+  deleteCrawledDataForChatbot(chatbotId: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private chatbots: Map<number, Chatbot>;
   private chatMessages: Map<number, ChatMessage>;
+  private crawledData: Map<number, CrawledData>; // New map for crawled data
   private currentUserId: number;
   private currentChatbotId: number;
   private currentMessageId: number;
+  private currentCrawledDataId: number; // New ID counter for crawled data
 
   constructor() {
     this.users = new Map();
     this.chatbots = new Map();
     this.chatMessages = new Map();
+    this.crawledData = new Map(); // Initialize new map
     this.currentUserId = 1;
     this.currentChatbotId = 1;
     this.currentMessageId = 1;
+    this.currentCrawledDataId = 1; // Initialize new ID counter
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -108,6 +130,36 @@ export class MemStorage implements IStorage {
     
     messages.forEach((message) => {
       this.chatMessages.delete(message.id);
+    });
+    
+    return true;
+  }
+
+  // Implementation of new methods for Crawled Data
+  async createCrawledData(insertData: InsertCrawledData): Promise<CrawledData> {
+    const id = this.currentCrawledDataId++;
+    const crawledData: CrawledData = { ...insertData, id, crawledAt: new Date() };
+    this.crawledData.set(id, crawledData);
+    return crawledData;
+  }
+
+  async getCrawledDataForChatbot(chatbotId: number): Promise<CrawledData[]> {
+    return Array.from(this.crawledData.values()).filter(
+      (data) => data.chatbotId === chatbotId
+    );
+  }
+
+  async deleteCrawledData(id: number): Promise<boolean> {
+    return this.crawledData.delete(id);
+  }
+
+  async deleteCrawledDataForChatbot(chatbotId: number): Promise<boolean> {
+    const dataToDelete = Array.from(this.crawledData.values()).filter(
+      (data) => data.chatbotId === chatbotId
+    );
+    
+    dataToDelete.forEach((data) => {
+      this.crawledData.delete(data.id);
     });
     
     return true;
