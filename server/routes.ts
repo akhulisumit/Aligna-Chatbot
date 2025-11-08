@@ -5,16 +5,33 @@ import { insertChatbotSchema, insertChatMessageSchema } from "@shared/schema";
 import { generateChatbotResponse, processUploadedContent } from "./ai";
 // File upload functionality (simplified for reliability)
 
+function isValidUrl(str: string): boolean {
+  try {
+    new URL(str);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create a new chatbot
   app.post("/api/chatbots", async (req, res) => {
     try {
       const validatedData = insertChatbotSchema.parse(req.body);
       
+      let contentType: 'text' | 'url' = 'text';
+      if (isValidUrl(validatedData.knowledgeBase)) {
+        contentType = 'url';
+        console.log(`Initiating crawl for chatbot knowledge base URL: ${validatedData.knowledgeBase}`);
+      } else {
+        console.log(`Processing text content for chatbot knowledge base (first 50 chars): ${validatedData.knowledgeBase.substring(0, 50)}...`);
+      }
+
       // Process the knowledge base content
       const processedKnowledge = await processUploadedContent(
         validatedData.knowledgeBase,
-        'text' // Default to text for now, can be extended
+        contentType
       );
       
       const chatbot = await storage.createChatbot({
@@ -160,7 +177,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Content is required" });
       }
       
-      const processedContent = await processUploadedContent(content, type || 'text');
+      let effectiveType: 'text' | 'url' = 'text';
+      if (type === 'url') {
+        if (!isValidUrl(content)) {
+          console.warn("Attempted to process content as URL, but content is not a valid URL.");
+          return res.status(400).json({ message: "Content must be a valid URL when type is 'url'" });
+        }
+        effectiveType = 'url';
+        console.log(`Explicitly processing content as URL: ${content}`);
+      } else if (isValidUrl(content) && !type) {
+        effectiveType = 'url';
+        console.log(`Inferring content type as URL for processing: ${content}`);
+      } else {
+        console.log(`Processing content as text (first 50 chars): ${content.substring(0, 50)}...`);
+      }
+
+      const processedContent = await processUploadedContent(content, effectiveType);
       res.json({ processedContent });
     } catch (error) {
       console.error("Error processing content:", error);
