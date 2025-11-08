@@ -32,6 +32,16 @@ export const chatMessages = pgTable("chat_messages", {
   timestamp: text("timestamp").notNull(),
 });
 
+export const crawledContent = pgTable("crawled_content", {
+  id: serial("id").primaryKey(),
+  chatbotId: integer("chatbot_id").references(() => chatbots.id).notNull(),
+  url: text("url").notNull(),
+  title: text("title"),
+  content: text("content").notNull(),
+  crawledAt: text("crawled_at").notNull(),
+  status: text("status").notNull().default('pending')
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -52,9 +62,20 @@ export const insertChatMessageSchema = createInsertSchema(chatMessages).pick({
   timestamp: true,
 });
 
+export const insertCrawledContentSchema = createInsertSchema(crawledContent).pick({
+  chatbotId: true,
+  url: true,
+  title: true,
+  content: true,
+  crawledAt: true,
+  status: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertChatbot = z.infer<typeof insertChatbotSchema>;
 export type Chatbot = typeof chatbots.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
+export type InsertCrawledContent = z.infer<typeof insertCrawledContentSchema>;
+export type CrawledContent = typeof crawledContent.$inferSelect;
