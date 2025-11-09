@@ -1,4 +1,4 @@
-import { users, chatbots, chatMessages, type User, type InsertUser, type Chatbot, type InsertChatbot, type ChatMessage, type InsertChatMessage } from "@shared/schema";
+import { users, chatbots, chatMessages, crawledDocuments, type User, type InsertUser, type Chatbot, type InsertChatbot, type ChatMessage, type InsertChatMessage, type CrawledDocument, type InsertCrawledDocument } from "@shared/schema";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -14,23 +14,33 @@ export interface IStorage {
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
   getChatMessages(chatbotId: number): Promise<ChatMessage[]>;
   deleteChatMessages(chatbotId: number): Promise<boolean>;
+
+  // New methods for crawled documents
+  createCrawledDocument(document: InsertCrawledDocument): Promise<CrawledDocument>;
+  getCrawledDocument(id: number): Promise<CrawledDocument | undefined>;
+  getCrawledDocumentsForChatbot(chatbotId: number): Promise<CrawledDocument[]>;
+  deleteCrawledDocumentsForChatbot(chatbotId: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private chatbots: Map<number, Chatbot>;
   private chatMessages: Map<number, ChatMessage>;
+  private crawledDocuments: Map<number, CrawledDocument>; // New
   private currentUserId: number;
   private currentChatbotId: number;
   private currentMessageId: number;
+  private currentDocumentId: number; // New
 
   constructor() {
     this.users = new Map();
     this.chatbots = new Map();
     this.chatMessages = new Map();
+    this.crawledDocuments = new Map(); // New
     this.currentUserId = 1;
     this.currentChatbotId = 1;
     this.currentMessageId = 1;
+    this.currentDocumentId = 1; // New
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -108,6 +118,37 @@ export class MemStorage implements IStorage {
     
     messages.forEach((message) => {
       this.chatMessages.delete(message.id);
+    });
+    
+    return true;
+  }
+
+  // New methods for crawled documents
+  async createCrawledDocument(insertDocument: InsertCrawledDocument): Promise<CrawledDocument> {
+    const id = this.currentDocumentId++;
+    const crawledAt = insertDocument.crawledAt || new Date();
+    const document: CrawledDocument = { ...insertDocument, id, crawledAt };
+    this.crawledDocuments.set(id, document);
+    return document;
+  }
+
+  async getCrawledDocument(id: number): Promise<CrawledDocument | undefined> {
+    return this.crawledDocuments.get(id);
+  }
+
+  async getCrawledDocumentsForChatbot(chatbotId: number): Promise<CrawledDocument[]> {
+    return Array.from(this.crawledDocuments.values()).filter(
+      (doc) => doc.chatbotId === chatbotId
+    );
+  }
+
+  async deleteCrawledDocumentsForChatbot(chatbotId: number): Promise<boolean> {
+    const documentsToDelete = Array.from(this.crawledDocuments.values()).filter(
+      (doc) => doc.chatbotId === chatbotId
+    );
+    
+    documentsToDelete.forEach((doc) => {
+      this.crawledDocuments.delete(doc.id);
     });
     
     return true;

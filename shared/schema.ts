@@ -32,6 +32,17 @@ export const chatMessages = pgTable("chat_messages", {
   timestamp: text("timestamp").notNull(),
 });
 
+export const crawledPages = pgTable("crawled_pages", {
+  id: serial("id").primaryKey(),
+  chatbotId: integer("chatbot_id").notNull(), // Links to the chatbot this data serves
+  url: text("url").notNull(),
+  title: text("title"), // Optional: title of the page
+  content: text("content").notNull(), // Extracted relevant text content
+  crawledAt: text("crawled_at").notNull(), // Timestamp of when it was crawled
+  status: text("status").notNull().default('pending'), // E.g., 'pending', 'success', 'failed'
+  errorMessage: text("error_message"), // Stores error details if crawling failed
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -52,9 +63,21 @@ export const insertChatMessageSchema = createInsertSchema(chatMessages).pick({
   timestamp: true,
 });
 
+export const insertCrawledPageSchema = createInsertSchema(crawledPages).pick({
+  chatbotId: true,
+  url: true,
+  title: true,
+  content: true,
+  crawledAt: true,
+  status: true,
+  errorMessage: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertChatbot = z.infer<typeof insertChatbotSchema>;
 export type Chatbot = typeof chatbots.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
+export type InsertCrawledPage = z.infer<typeof insertCrawledPageSchema>;
+export type CrawledPage = typeof crawledPages.$inferSelect;

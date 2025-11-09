@@ -3,6 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertChatbotSchema, insertChatMessageSchema } from "@shared/schema";
 import { generateChatbotResponse, processUploadedContent } from "./ai";
+// NEW: Import crawler functionality
+import { crawlWebsite } from "./crawler"; // Assuming this file will be created
 // File upload functionality (simplified for reliability)
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -160,7 +162,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Content is required" });
       }
       
-      const processedContent = await processUploadedContent(content, type || 'text');
+      let processedContent;
+      if (type === 'url') {
+        // Use the new crawler logic for URLs
+        processedContent = await crawlWebsite(content);
+      } else {
+        // Use existing logic for other content types (e.g., 'text')
+        processedContent = await processUploadedContent(content, type || 'text');
+      }
+
       res.json({ processedContent });
     } catch (error) {
       console.error("Error processing content:", error);
