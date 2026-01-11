@@ -1,3 +1,4 @@
+//shared schema
 import { pgTable, text, serial, integer, boolean, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";

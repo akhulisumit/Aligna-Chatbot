@@ -57,3 +57,42 @@ Preferred communication style: Simple, everyday language.
 - **Code Quality**: TypeScript strict mode with comprehensive type checking
 - **Build Process**: Optimized production builds with esbuild for server bundling
 - **Debugging**: Replit-specific development tools and error handling
+
+# Deployment
+
+## Render Deployment
+
+This application is configured for deployment on [Render](https://render.com).
+
+### Prerequisites
+1. A Render account
+2. Google AI API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+3. Neon PostgreSQL database from [Neon](https://neon.tech)
+
+### Environment Variables
+Copy `.env.example` to `.env` and fill in your values:
+
+```bash
+GOOGLE_API_KEY=your_google_api_key_here
+SESSION_SECRET=your_session_secret_here
+DATABASE_URL=your_neon_database_url_here
+```
+
+### Deploy Steps
+1. Connect your GitHub repository to Render
+2. Render will automatically detect the `render.yaml` configuration
+3. Set the following environment variables in Render dashboard:
+   - `GOOGLE_API_KEY`
+   - `SESSION_SECRET`
+   - `DATABASE_URL`
+4. Deploy the service
+
+### Manual Configuration (if needed)
+If Render doesn't auto-detect the configuration:
+- **Service Type**: Web Service
+- **Build Command**: `npm run build`
+- **Start Command**: `npm start`
+- **Runtime**: Node.js
+- **Plan**: Starter (free tier)
+
+The application will be available at your Render URL once deployed.
