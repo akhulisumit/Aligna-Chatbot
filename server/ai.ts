@@ -37,11 +37,11 @@ async function makeAIRequest(prompt: string): Promise<string> {
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-pro",
-      contents: [{ parts: [{ text: prompt }] }],
+      model: "gemini-3-flash-preview",
+      contents: prompt,
     });
 
-    return response.response.text() ?? "";
+    return response.text ?? "";
   } catch (error) {
     console.error("Gemini API error:", error);
     throw error;
