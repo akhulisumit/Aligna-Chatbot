@@ -37,7 +37,7 @@ async function makeAIRequest(prompt: string): Promise<string> {
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-pro",
       contents: [{ parts: [{ text: prompt }] }],
     });
 
