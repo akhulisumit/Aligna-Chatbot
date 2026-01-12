@@ -96,3 +96,9 @@ If Render doesn't auto-detect the configuration:
 - **Plan**: Starter (free tier)
 
 The application will be available at your Render URL once deployed.
+
+## Deployed Links
+
+- **Aligna Funtional**: https://aligna-finale.vercel.app/
+- **Aligna UI and Auth**: https://aligna-chatbot.onrender.com/
+
